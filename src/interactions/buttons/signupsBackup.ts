@@ -24,7 +24,7 @@ export default new Button('signups-backup').onExecute(async (i, cache) => {
 		},
 		data: {
 			players: signup.players.filter((p) => p != i.user.id),
-			backups: [...signup.backups, i.user.id],
+			backups: [...signup.backups.filter((p) => p != i.user.id), i.user.id],
 		},
 	});
 

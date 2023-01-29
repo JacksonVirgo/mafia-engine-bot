@@ -23,7 +23,7 @@ export default new Button('signups-join').onExecute(async (i, cache) => {
 			id: signup.id,
 		},
 		data: {
-			players: [...signup.players, i.user.id],
+			players: [...signup.players.filter((p) => p != i.user.id), i.user.id],
 			backups: signup.backups.filter((p) => p != i.user.id),
 		},
 	});
