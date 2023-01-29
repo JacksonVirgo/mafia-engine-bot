@@ -48,7 +48,7 @@ export async function createSignupPost(signup: Signup, guild: Guild | null, isLo
 		for (let i = 0; i < list.length; i++) {
 			const storedUser = list[i];
 			let base = true;
-			if (base) value += `> <@${storedUser}>`;
+			if (base) value += `> <@${storedUser}>\n`;
 		}
 		if (value === '') value = '> Nobody';
 		return value;
