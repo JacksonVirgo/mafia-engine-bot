@@ -1,7 +1,7 @@
 import { SlashCommandBuilder } from 'discord.js';
 import { newSlashCommand } from '../../structures/BotClient';
 
-const data = new SlashCommandBuilder().setName('signups').setDescription('Create a signups LFG post');
+const data = new SlashCommandBuilder().setName('invite').setDescription('See the invite links for our servers');
 data.addStringOption((title) =>
 	title.setName('server').setDescription('Server you want the invite link for.').setRequired(true).setChoices(
 		{
