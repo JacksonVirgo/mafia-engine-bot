@@ -5,15 +5,15 @@ import { createSignupPost } from '../commands/signups';
 import TestModal from '../modals/example';
 
 export default new Button('signups-leave').onExecute(async (i, cache) => {
-	if (!cache) return i.reply({ content: 'This button is invalid', ephemeral: true });
+	if (!cache) return await i.reply({ content: 'This button is invalid', ephemeral: true });
 	const signup = await prisma.signup.findUnique({
 		where: {
 			id: cache,
 		},
 	});
 
-	if (!signup) return i.reply({ content: 'This signup is no longer active', ephemeral: true });
-	if (signup.isLocked) return i.reply({ content: 'This signup is locked.', ephemeral: true });
+	if (!signup) return await i.reply({ content: 'This signup is no longer active', ephemeral: true });
+	if (signup.isLocked) return await i.reply({ content: 'This signup is locked.', ephemeral: true });
 
 	const updatedSignup = await prisma.signup.update({
 		where: {

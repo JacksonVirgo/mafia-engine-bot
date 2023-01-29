@@ -11,12 +11,11 @@ export default new Button('signups-backup').onExecute(async (i, cache) => {
 		},
 	});
 
-	if (!signup) return i.reply({ content: 'This signup is no longer active', ephemeral: true });
-	if (signup.isLocked) return i.reply({ content: 'This signup is locked.', ephemeral: true });
+	if (!signup) return await i.reply({ content: 'This signup is no longer active', ephemeral: true });
+	if (signup.isLocked) return await i.reply({ content: 'This signup is locked.', ephemeral: true });
 
 	const hasBackup = signup.players.includes(i.user.id);
-
-	if (hasBackup) return i.reply({ content: 'You cannot a join a game you already are in.', ephemeral: true });
+	if (hasBackup) return await i.reply({ content: 'You cannot a join a game you already are in.', ephemeral: true });
 
 	const updatedSignup = await prisma.signup.update({
 		where: {
@@ -30,5 +29,5 @@ export default new Button('signups-backup').onExecute(async (i, cache) => {
 
 	const { embed, row } = await createSignupPost(updatedSignup, i.guild);
 	await i.message.edit({ embeds: [embed], components: [row] });
-	await i.reply({ content: 'Successfully backed up', ephemeral: true });
+	return await i.reply({ content: 'Successfully backed up', ephemeral: true });
 });
