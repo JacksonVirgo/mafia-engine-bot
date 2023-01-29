@@ -3,16 +3,19 @@ import { newSlashCommand } from '../../structures/BotClient';
 const data = new SlashCommandBuilder().setName('prods').setDescription('Generate prods');
 data.addRoleOption((role) => role.setName('aliveline').setDescription('Role which all living players have').setRequired(true));
 data.addChannelOption((channel) => channel.setName('channel').setDescription('Channel to check prods within').addChannelTypes(ChannelType.GuildText).setRequired(true));
-data.addIntegerOption((str) => str.setName('since').setDescription('Timestamp of the message you want to check prods since').setRequired(true));
+data.addIntegerOption((str) => str.setName('ago').setDescription('How many hours to check back').setRequired(true));
+data.addIntegerOption((str) => str.setName('requirement').setDescription('How many posts do you want them to have to pass.').setRequired(true));
 
 export default newSlashCommand({
 	data,
 	execute: async (i) => {
 		const aliveLine = i.options.getRole('aliveline', true);
 		const channel = i.options.getChannel('channel', true) as TextChannel;
-		const since = i.options.getInteger('since', true);
-		if (!i.guild) return;
+		const ago = i.options.getInteger('ago', true) * 1000;
+		const req = i.options.getInteger('requirement', true);
+		const checkFrom = new Date(new Date().getTime() - ago * 60 * 60 * 1000).getTime();
 
+		if (!i.guild) return;
 		await i.deferReply({ ephemeral: true });
 
 		try {
@@ -29,9 +32,9 @@ export default newSlashCommand({
 				let hitProdThreshold = false;
 				await channel.messages.fetch({ limit: 100, before: message.id }).then((messagePage) => {
 					messagePage.forEach((msg) => {
-						if (msg.createdTimestamp < since) hitProdThreshold = true;
+						if (msg.createdTimestamp < checkFrom) hitProdThreshold = true;
 						if (users.includes(msg.author.id)) {
-							if (msg.createdTimestamp >= since) {
+							if (msg.createdTimestamp >= checkFrom) {
 								prodChecks[msg.author.id].push(msg);
 							}
 						}
