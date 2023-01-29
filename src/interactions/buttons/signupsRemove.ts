@@ -27,5 +27,5 @@ export default new Button('signups-leave').onExecute(async (i, cache) => {
 
 	const { embed, row } = await createSignupPost(updatedSignup, i.guild);
 	await i.message.edit({ embeds: [embed], components: [row] });
-	await i.reply({ content: 'Successfully signed up', ephemeral: true });
+	await i.reply({ content: 'Successfully left', ephemeral: true });
 });

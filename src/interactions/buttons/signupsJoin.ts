@@ -16,9 +16,7 @@ export default new Button('signups-join').onExecute(async (i, cache) => {
 	if (signup.isLocked) return i.reply({ content: 'This signup is locked.', ephemeral: true });
 
 	const hasPlayer = signup.players.includes(i.user.id);
-	const hasBackup = signup.players.includes(i.user.id);
-
-	if (hasPlayer || hasBackup) return i.reply({ content: 'You cannot a join a game you already are in.', ephemeral: true });
+	if (hasPlayer) return i.reply({ content: 'You cannot a join a game you already are in.', ephemeral: true });
 
 	const updatedSignup = await prisma.signup.update({
 		where: {
@@ -26,6 +24,7 @@ export default new Button('signups-join').onExecute(async (i, cache) => {
 		},
 		data: {
 			players: [...signup.players, i.user.id],
+			backups: signup.backups.filter((p) => p != i.user.id),
 		},
 	});
 
