@@ -9,6 +9,10 @@ export default new Button('signups-join').onExecute(async (i, cache) => {
 	const signup = await prisma.signup.findUnique({ where: { id: cache } });
 	if (!signup || signup.isLocked) return await i.reply({ content: 'This signup is no longer active', ephemeral: true });
 
+	if (signup.limit && signup.players.length >= signup.limit) {
+		return await i.reply({ content: 'This signup is full', ephemeral: true });
+	}
+
 	const players = [...signup.players.filter((p) => p != i.user.id), i.user.id];
 	const backups = signup.backups.filter((p) => p != i.user.id);
 
