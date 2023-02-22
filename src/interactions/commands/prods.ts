@@ -52,7 +52,7 @@ export default newSlashCommand({
 			for (const userID in prodChecks) {
 				console.log(`checking ${userID}`);
 				const list = prodChecks[userID];
-				if (list.length < 25) prodded.push(`<@${userID}> has ${list.length}/${20} messages.`);
+				if (list.length < req ?? 20) prodded.push(`<@${userID}> has ${list.length}/${req ?? 20} messages.`);
 			}
 
 			if (prodded.length > 0) embed.addFields({ name: 'Prodded', value: prodded.join('\n') });
