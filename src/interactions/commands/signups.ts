@@ -48,7 +48,7 @@ export async function createSignupPost(signup: Signup, guild: Guild | null, isLo
 		for (let i = 0; i < list.length; i++) {
 			const storedUser = list[i];
 			let base = true;
-			if (base) value += `> <@${storedUser}>`;
+			if (base) value += `> <@${storedUser}>\n`;
 		}
 		if (value === '') value = '> Nobody';
 		return value;
@@ -75,7 +75,13 @@ export async function createSignupPost(signup: Signup, guild: Guild | null, isLo
 	);
 
 	const row = new ActionRowBuilder<ButtonBuilder>();
-	row.addComponents(new ButtonBuilder().setCustomId(signupsJoin.createCustomID(signup.id)).setEmoji('✅').setLabel('Play').setStyle(ButtonStyle.Secondary));
+
+	const joinButton = new ButtonBuilder().setCustomId(signupsJoin.createCustomID(signup.id)).setEmoji('✅').setLabel('Play').setStyle(ButtonStyle.Secondary);
+	if (signup.limit && signup.players.length >= signup.limit) {
+		joinButton.setDisabled(true);
+	}
+	row.addComponents(joinButton);
+
 	row.addComponents(new ButtonBuilder().setCustomId(signupsBackup.createCustomID(signup.id)).setEmoji('❔').setLabel('Backup').setStyle(ButtonStyle.Secondary));
 	row.addComponents(new ButtonBuilder().setCustomId(signupsRemove.createCustomID(signup.id)).setEmoji('❌').setStyle(ButtonStyle.Secondary));
 	return { embed, row };

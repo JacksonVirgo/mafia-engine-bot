@@ -5,31 +5,22 @@ import TestModal from '../modals/example';
 
 export default new Button('signups-backup').onExecute(async (i, cache) => {
 	if (!cache) return i.reply({ content: 'This button is invalid', ephemeral: true });
-	const signup = await prisma.signup.findUnique({
-		where: {
-			id: cache,
-		},
-	});
+	const signup = await prisma.signup.findUnique({ where: { id: cache } });
+	if (!signup || signup.isLocked) return await i.reply({ content: 'This signup is no longer active', ephemeral: true });
 
-	if (!signup) return i.reply({ content: 'This signup is no longer active', ephemeral: true });
-	if (signup.isLocked) return i.reply({ content: 'This signup is locked.', ephemeral: true });
-
-	const hasPlayer = signup.players.includes(i.user.id);
-	const hasBackup = signup.players.includes(i.user.id);
-
-	if (hasPlayer || hasBackup) return i.reply({ content: 'You cannot a join a game you already are in.', ephemeral: true });
+	const backups = [...signup.backups.filter((p) => p != i.user.id), i.user.id];
+	const players = signup.players.filter((p) => p != i.user.id);
 
 	const updatedSignup = await prisma.signup.update({
 		where: {
-			id: signup.id,
+			id: cache,
 		},
 		data: {
-			backups: [...signup.backups, i.user.id],
+			players,
+			backups,
 		},
 	});
 
 	const { embed, row } = await createSignupPost(updatedSignup, i.guild);
-	await i.message.edit({ embeds: [embed], components: [row] });
-	await i.reply({ content: 'Successfully signed up', ephemeral: true });
-	await i.deleteReply();
+	await i.update({ embeds: [embed], components: [row] });
 });
