@@ -27,8 +27,9 @@ model Signup {
 // Roles and Setups
 
 model Role {
-  id           String  @id @default(auto()) @map("_id") @db.ObjectId
-  name         String  @unique
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  name         String   @unique
+  otherNames   String[]
   alignment    String
   abilities    String
   winCondition String
