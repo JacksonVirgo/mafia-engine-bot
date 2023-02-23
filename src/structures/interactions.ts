@@ -1,5 +1,4 @@
-import { AnySelectMenuInteraction, ButtonInteraction, Collection, ModalBuilder, ModalSubmitInteraction } from 'discord.js';
-import { Interaction as BaseInteraction } from 'discord.js';
+import { ActionRowBuilder, AnySelectMenuInteraction, ButtonBuilder, ButtonInteraction, Collection, ModalBuilder, ModalSubmitInteraction, TextInputBuilder } from 'discord.js';
 type CustomID = string;
 type AnyOutcome = any | Promise<any>;
 
@@ -56,10 +55,24 @@ export class Interaction {
 export class Button extends Interaction {
 	static buttons: Collection<CustomID, Button> = new Collection();
 	private func: undefined | ((i: ButtonInteraction, cache?: string) => any | Promise<any>);
-
+	private buttonBuilder: ButtonBuilder | undefined;
+	private customID: CustomID;
 	constructor(customId: CustomID) {
 		super(customId);
+		this.customID = customId;
 		Button.buttons.set(customId, this);
+	}
+
+	public setButton(button: ButtonBuilder) {
+		this.buttonBuilder = button;
+		return this;
+	}
+
+	public getButton(cache?: string) {
+		const newButton = this.buttonBuilder;
+		if (cache) newButton.setCustomId(`${this.customID}_${cache}`);
+		else newButton.setCustomId(this.customID);
+		return newButton;
 	}
 
 	public onExecute(func: (i: ButtonInteraction, cache?: string) => any | Promise<any>) {
@@ -93,21 +106,41 @@ export class SelectMenu extends Interaction {
 	}
 }
 
-export type ModalFunc = (i: ModalSubmitInteraction, cache: string) => AnyOutcome;
+export type ModalFunc = (i: ModalSubmitInteraction, cache?: string) => AnyOutcome;
+export type ModalFill = (modal: ModalBuilder, cache?: string) => ActionRowBuilder<TextInputBuilder>[] | Promise<ActionRowBuilder<TextInputBuilder>[]>;
 export class Modal extends Interaction {
 	static modals: Collection<CustomID, Modal> = new Collection();
 	private func: undefined | ModalFunc;
+	private hydrateFunc: undefined | ModalFill;
 	private modalBuilder: ModalBuilder;
+	private customID: string;
 
-	constructor(customId: CustomID, modal: ModalBuilder) {
+	constructor(customId: CustomID, title: string) {
 		super(customId);
-		this.modalBuilder = modal;
+		this.modalBuilder = new ModalBuilder().setTitle(title);
 		this.modalBuilder.setCustomId(customId);
+		this.customID = customId;
 		Modal.modals.set(customId, this);
 	}
 
-	public getModal() {
-		return this.modalBuilder;
+	public hydrate(func: ModalFill) {
+		this.hydrateFunc = func;
+		return this;
+	}
+
+	public async getModal(cache?: string) {
+		let newModal = this.modalBuilder;
+		if (this.hydrateFunc) newModal.setComponents(await this.hydrateFunc(newModal, cache));
+
+		if (cache) newModal.setCustomId(`${this.customID}_${cache}`);
+		else newModal.setCustomId(this.customID);
+		return newModal;
+	}
+
+	public newInput(input: TextInputBuilder) {
+		const row = new ActionRowBuilder<TextInputBuilder>().addComponents(input);
+		this.modalBuilder.addComponents(row);
+		return this;
 	}
 
 	public onExecute(func: ModalFunc) {

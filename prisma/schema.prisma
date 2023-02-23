@@ -23,3 +23,17 @@ model Signup {
   backups  String[]
   isLocked Boolean  @default(false)
 }
+
+// Roles and Setups
+
+model Role {
+  id           String  @id @default(auto()) @map("_id") @db.ObjectId
+  name         String
+  alignment    String
+  abilities    String
+  winCondition String
+  iconUrl      String?
+  flavourText  String?
+  roleColour   String?
+  wikiUrl      String?
+}
