@@ -1,5 +1,6 @@
 import { Role } from '@prisma/client';
 import { HexColorString, EmbedBuilder } from 'discord.js';
+import { findBestMatch } from 'string-similarity';
 import { prisma } from '..';
 
 export function createRoleCardEmbed(rolecard: Role) {
@@ -42,4 +43,33 @@ export async function getListOfRolecardNames(): Promise<string[]> {
 
 	data.forEach((v) => result.push(v.name));
 	return result;
+}
+
+export async function getRole(name: string) {
+	try {
+		let isSpellChecked = false;
+		let fetchedRole = await prisma.role.findUnique({
+			where: {
+				name,
+			},
+		});
+
+		if (!fetchedRole) {
+			const allRoleNames = await getListOfRolecardNames();
+			const stringSimilarity = findBestMatch(name, allRoleNames);
+			const target = stringSimilarity.bestMatch.target;
+
+			fetchedRole = await prisma.role.findFirst({
+				where: {
+					name: target,
+				},
+			});
+
+			isSpellChecked = true;
+		}
+
+		return fetchedRole;
+	} catch (err) {
+		return null;
+	}
 }

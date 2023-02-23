@@ -28,7 +28,7 @@ model Signup {
 
 model Role {
   id           String  @id @default(auto()) @map("_id") @db.ObjectId
-  name         String
+  name         String  @unique
   alignment    String
   abilities    String
   winCondition String
