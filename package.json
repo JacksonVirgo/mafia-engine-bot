@@ -26,5 +26,5 @@
 		"fs": "^0.0.1-security",
 		"string-similarity": "^4.0.4"
 	},
-	"description": ""
+	"description": "Discord bot"
 }
