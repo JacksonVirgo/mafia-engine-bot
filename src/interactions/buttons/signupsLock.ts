@@ -2,7 +2,6 @@ import { sign } from 'crypto';
 import { prisma } from '../..';
 import { Button } from '../../structures/interactions';
 import { createSignupPost } from '../commands/signups';
-import TestModal from '../modals/example';
 
 export default new Button('signups-lock').onExecute(async (i, cache) => {
 	if (!cache) return i.reply({ content: 'This button is invalid', ephemeral: true });

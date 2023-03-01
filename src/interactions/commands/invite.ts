@@ -21,7 +21,7 @@ export default newSlashCommand({
 	data,
 	execute: async (i) => {
 		const link = i.options.getString('server', true);
-		const ephemeral = i.options.getBoolean('reveal', false) ?? false;
+		const ephemeral = !(i.options.getBoolean('reveal', false) ?? false);
 
 		await i.reply({
 			content: link,
