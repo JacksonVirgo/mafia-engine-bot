@@ -8,6 +8,17 @@ import { findBestMatch } from 'string-similarity';
 const data = new SlashCommandBuilder().setName('roles').setDescription('View a role');
 data.addStringOption((x) => x.setName('name').setDescription('Role name').setRequired(true));
 
+export function correctSpelling(name: string, allRoleNames: string[]) {
+	try {
+		if (allRoleNames.length === 1) return allRoleNames[0];
+		const similarity = findBestMatch(name, allRoleNames);
+		const target = similarity.bestMatch.target;
+		return target;
+	} catch (err) {
+		return null;
+	}
+}
+
 export default newSlashCommand({
 	data,
 	execute: async (i) => {
@@ -15,7 +26,10 @@ export default newSlashCommand({
 
 		let role = await prisma.role.findFirst({
 			where: {
-				name: update,
+				name: {
+					mode: 'insensitive',
+					equals: update,
+				},
 			},
 		});
 
@@ -23,8 +37,8 @@ export default newSlashCommand({
 
 		if (!role) {
 			const allRoleNames = await getListOfRolecardNames();
-			const stringSimilarity = findBestMatch(update, allRoleNames);
-			const target = stringSimilarity.bestMatch.target;
+			const target = correctSpelling(update, allRoleNames);
+			if (!target) return i.reply({ content: 'Unable to find a matching role', ephemeral: true });
 
 			role = await prisma.role.findFirst({
 				where: {
