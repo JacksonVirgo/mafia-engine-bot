@@ -11,8 +11,9 @@ datasource db {
 }
 
 model DiscordAccount {
-  id        String @id @default(auto()) @map("_id") @db.ObjectId
-  discordId String @unique
+  id        String    @id @default(auto()) @map("_id") @db.ObjectId
+  discordId String    @unique
+  messages  Message[]
 }
 
 model Signup {
@@ -37,4 +38,52 @@ model Role {
   flavourText  String?
   roleColour   String?
   wikiUrl      String?
+}
+
+// Archive
+model Game {
+  id       String    @id @default(auto()) @map("_id") @db.ObjectId
+  channels Channel[]
+  gameTag  String    @unique
+}
+
+model Channel {
+  id     String @id @default(auto()) @map("_id") @db.ObjectId
+  game   Game   @relation(fields: [gameId], references: [id])
+  gameId String @db.ObjectId
+
+  guildId   String
+  channelId String  @unique
+  name      String
+  isThread  Boolean @default(false)
+
+  messages Message[]
+  thread   Thread[]
+}
+
+model Thread {
+  id        String  @id @default(auto()) @map("_id") @db.ObjectId
+  channel   Channel @relation(fields: [channelId], references: [id])
+  message   Message @relation(fields: [messageId], references: [id])
+  channelId String  @db.ObjectId
+  messageId String  @db.ObjectId
+}
+
+model Message {
+  id        String  @id @default(auto()) @map("_id") @db.ObjectId
+  channel   Channel @relation(fields: [channelId], references: [id])
+  channelId String  @db.ObjectId
+
+  messageId    String    @unique
+  guildId      String
+  createdAt    DateTime
+  editedAt     DateTime?
+  cleanContent String?
+  threads      Thread[]
+  pinned       Boolean   @default(false)
+
+  repliedTo String?
+
+  author   DiscordAccount @relation(fields: [authorId], references: [id])
+  authorId String         @db.ObjectId
 }

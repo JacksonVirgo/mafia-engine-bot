@@ -8,6 +8,14 @@ data.addChannelOption((x) => x.setName('category').setDescription('Category to d
 export default newSlashCommand({
 	data,
 	execute: async (i) => {
-		await i.showModal(await NukeModal.getModal());
+		await i.deferReply();
+		const category = i.options.getChannel('category', true) as CategoryChannel;
+		const channels: Channel[] = [];
+		category.children.cache.forEach((v) => channels.push(v));
+		for (let i = 0; i < channels.length; i++) {
+			await channels[i].delete();
+		}
+		await category.delete();
+		await i.editReply('Done');
 	},
 });

@@ -9,10 +9,5 @@ export default new Modal('nuke-category', 'Nuke Category')
 		// Fetch Category
 		const nuclearCodes = i.fields.getTextInputValue('codes');
 
-		// const category = i.options.getChannel('category', true) as CategoryChannel;
-		// const channels: Channel[] = [];
-		// category.children.cache.forEach((v) => channels.push(v));
-		// for (let i = 0; i < channels.length; i++) {
-		// 	await channels[i].delete();
-		// }
+		
 	});

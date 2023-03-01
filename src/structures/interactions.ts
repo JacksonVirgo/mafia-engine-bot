@@ -31,7 +31,6 @@ export class Event {
 export class Interaction {
 	private customId: CustomID;
 	constructor(customId: CustomID) {
-		// Check REGEX if contains an underscore.
 		this.customId = customId;
 
 		console.log(`Loaded [${this.customId}]`);
@@ -89,7 +88,6 @@ export class Button extends Interaction {
 export class SelectMenu extends Interaction {
 	static selectMenus: Collection<CustomID, SelectMenu> = new Collection();
 	private func: undefined | ((i: AnySelectMenuInteraction, cache: string) => any | Promise<any>);
-
 	constructor(customId: CustomID) {
 		super(customId);
 		SelectMenu.selectMenus.set(customId, this);
