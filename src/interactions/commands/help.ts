@@ -8,17 +8,9 @@ const options: Record<string, string> = {
 	'List of Roles': 'https://discord-mafia-role-cards.fandom.com/wiki/List_of_roles',
 	'How to Play': 'https://discord-mafia-role-cards.fandom.com/wiki/How_To_Play',
 	'Grand Idea Mafia': 'https://discord-mafia-role-cards.fandom.com/wiki/Grand_Idea_Mafia',
-	'List of Staff': LIST_OF_STAFF,
 	Terminology: 'https://discord-mafia-role-cards.fandom.com/wiki/Terminology',
 	'Voting Terminology': 'https://discord-mafia-role-cards.fandom.com/wiki/Voting_Terminology',
 };
-
-const StaffRoles: string[] = [
-	'648664560936550400', // Co-Owner
-	'648664724153565184', // Moderator
-	'720121056320553021', // Helper
-	'903394030904299541', // Technician
-];
 
 const parseOptions = (): APIApplicationCommandOptionChoice<string>[] => {
 	const result: APIApplicationCommandOptionChoice<string>[] = [];
@@ -52,48 +44,7 @@ export default newSlashCommand({
 		const option = options[selectedOption];
 		if (!option) return i.reply({ content: 'Invalid request', ephemeral: true });
 
-		if (option === LIST_OF_STAFF) {
-			const allStaff: Record<string, string[]> = {};
-			for (let j = 0; j < StaffRoles.length; j++) {
-				const staffRoleID = StaffRoles[j];
-				const { role, members } = await getAllWithRole(i.guild, staffRoleID);
-
-				const uniqueMembers = [];
-				members.forEach((v) => {
-					let isUnique = true;
-					for (const staffTier in allStaff) {
-						const staff = allStaff[staffTier];
-						if (staff.includes(v.id)) isUnique = false;
-					}
-
-					if (isUnique) uniqueMembers.push(v.id);
-				});
-
-				allStaff[role.name] = uniqueMembers;
-			}
-
-			const embed = new EmbedBuilder().setTitle('Current Staff').setThumbnail(i.guild.iconURL()).setColor('White');
-
-			for (const staffTier in allStaff) {
-				const staff = allStaff[staffTier];
-
-				let combinedStr = '';
-				staff.forEach((v) => (combinedStr += `<@${v}>\n`));
-				combinedStr.trim();
-				if (combinedStr === '') combinedStr = '\u200B';
-
-				const field = {
-					name: staffTier,
-					value: combinedStr,
-				};
-
-				embed.addFields(field);
-			}
-
-			return i.reply({ embeds: [embed] });
-		} else {
-			const embed = new EmbedBuilder().setTitle(selectedOption).setURL(option).setThumbnail(i.guild.iconURL()).setDescription('Click on the link to access the wiki page').setColor('White');
-			await i.reply({ embeds: [embed] });
-		}
+		const embed = new EmbedBuilder().setTitle(selectedOption).setURL(option).setThumbnail(i.guild.iconURL()).setDescription('Click on the link to access the wiki page').setColor('White');
+		await i.reply({ embeds: [embed] });
 	},
 });

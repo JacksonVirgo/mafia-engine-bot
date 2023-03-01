@@ -4,7 +4,7 @@
 	"main": "index.js",
 	"scripts": {
 		"dev": "nodemon ./src/index.ts",
-		"start": "nodemon ./src/index.ts",
+		"start": "pm2 start ./dist/index.js",
 		"build": "tsc",
 		"postinstall": "npm run build",
 		"build:prisma": "npx prisma format && npx prisma generate && npx prisma db push"
