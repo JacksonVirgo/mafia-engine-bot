@@ -5,7 +5,7 @@ import { prisma } from '..';
 
 export function createRoleCardEmbed(rolecard: Role) {
 	try {
-		const { name, alignment, flavourText, roleColour, abilities, iconUrl, winCondition } = rolecard;
+		const { name, alignment, flavourText, roleColour, abilities, iconUrl, winCondition, wikiUrl } = rolecard;
 		const embed = new EmbedBuilder();
 		const hex = roleColour as HexColorString;
 
@@ -24,6 +24,7 @@ export function createRoleCardEmbed(rolecard: Role) {
 
 		if (flavourText) embed.setDescription(`*${flavourText}*`);
 		if (iconUrl) embed.setThumbnail(iconUrl);
+		if (wikiUrl) embed.setURL(wikiUrl);
 
 		return embed;
 	} catch (err) {
