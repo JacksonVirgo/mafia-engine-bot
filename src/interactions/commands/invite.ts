@@ -6,7 +6,7 @@ data.addStringOption((title) =>
 	title.setName('server').setDescription('Server you want the invite link for.').setRequired(true).setChoices(
 		{
 			name: 'Red Dice',
-			value: 'https://discord.gg/dReQD6CWjH',
+			value: 'https://discord.gg/v4e6rrhXJG',
 		},
 		{
 			name: 'Blue Dice',
