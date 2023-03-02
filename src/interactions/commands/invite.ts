@@ -5,11 +5,11 @@ const data = new SlashCommandBuilder().setName('invite').setDescription('See the
 data.addStringOption((title) =>
 	title.setName('server').setDescription('Server you want the invite link for.').setRequired(true).setChoices(
 		{
-			name: 'Red Dice',
+			name: 'Discord Mafia',
 			value: 'https://discord.gg/v4e6rrhXJG',
 		},
 		{
-			name: 'Blue Dice',
+			name: 'Discord Mafia Playerchats',
 			value: 'https://discord.gg/4ygmH7b',
 		}
 	)
