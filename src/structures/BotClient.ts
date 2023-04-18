@@ -5,6 +5,7 @@ import { interactions } from './BaseInteraction';
 import { Button, Event, Modal, SelectMenu } from './interactions';
 import OnClientReady from '../interactions/events/clientReady';
 import OnInteraction from '../interactions/events/onInteraction';
+import { ContextMenuCommandBuilder, ApplicationCommandType } from 'discord.js';
 
 export const DEFAULT_INTENTS = { intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMembers, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent, GatewayIntentBits.GuildIntegrations] };
 
@@ -43,6 +44,7 @@ export class BotClient extends Client {
 		this.loadInteractions<Button>('buttons');
 		this.loadInteractions<SelectMenu>('selectmenu');
 		this.loadInteractions<Modal>('modals');
+		this.loadInteractions<ContextMenuCommandBuilder>('context');
 
 		this.assignEvents();
 		this.registerCommands();
