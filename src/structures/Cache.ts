@@ -10,6 +10,15 @@ interface StoredCache extends CachedItem {
 	handle: string;
 }
 
+let cacheCounter = 0;
+export function cacheTick() {
+	if (cacheCounter > 5) {
+		cacheCounter = 0;
+		return true;
+	}
+	return false;
+}
+
 const cache: Collection<string, StoredCache> = new Collection();
 
 export function addToCache(data: any, expires: number | undefined) {

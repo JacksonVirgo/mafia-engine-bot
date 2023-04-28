@@ -24,22 +24,28 @@ async function createOrFetchGame(gameTag: string) {
 	}
 }
 
-async function archiveChannel(channel: TextChannel, gameTag: string) {
+export async function archiveChannel(channel: TextChannel, gameTag?: string) {
 	try {
-		const newChannel = await prisma.channel.create({
-			data: {
-				channelId: channel.id,
-				guildId: channel.guildId,
-				name: channel.name,
-				game: {
-					connect: {
-						gameTag: gameTag,
+		const newChannel = gameTag
+			? await prisma.channel.create({
+					data: {
+						channelId: channel.id,
+						guildId: channel.guildId,
+						name: channel.name,
+						game: {
+							connect: {
+								gameTag: gameTag,
+							},
+						},
 					},
-				},
-			},
-		});
-
-		console.log(newChannel);
+			  })
+			: await prisma.channel.create({
+					data: {
+						channelId: channel.id,
+						guildId: channel.guildId,
+						name: channel.name,
+					},
+			  });
 
 		if (!newChannel) return null;
 
@@ -54,20 +60,17 @@ async function archiveChannel(channel: TextChannel, gameTag: string) {
 		let whileIndex = 0;
 
 		while (message) {
-			console.log('WHILE LOOP ITERATION');
 			whileIndex += 1;
 			const messages = await channel.messages.fetch({ limit: 100, before: message.id });
 
 			if (whileIndex === 1) messages.set(message.id, message);
 			for (let i = 0; i < messages.size; i++) {
-				console.log(i);
+				// console.log(i);
 				const { archived, count, error, alreadyExists } = await archiveMessage(messages.at(i), newChannel, gameTag);
 				totalCount += count;
-				console.log(whileIndex, i, totalCount, error, alreadyExists ? 'REPEATED' : 'CREATED');
+				// console.log(whileIndex, i, totalCount, error, alreadyExists ? 'REPEATED' : 'CREATED');
 			}
 			message = 0 < messages.size ? messages.at(messages.size - 1) : null;
-
-			console.log('ITERATION');
 			// await i.editReply({ embeds: [createProgressEmbed(channel, messagesToArchive, null)] });
 		}
 
@@ -78,7 +81,6 @@ async function archiveChannel(channel: TextChannel, gameTag: string) {
 }
 
 async function archiveMessage(msg: Message, archivedChannel: Channel, gameTag: string) {
-	console.log(msg.cleanContent);
 	let count = 0;
 	try {
 		const reference = msg.reference;
@@ -107,6 +109,8 @@ async function archiveMessage(msg: Message, archivedChannel: Channel, gameTag: s
 					connectOrCreate: {
 						create: {
 							discordId: msg.author.id,
+							username: msg.author.username,
+							avatarUrl: msg.author.avatarURL({ extension: 'png' }),
 						},
 						where: {
 							discordId: msg.author.id,
@@ -115,6 +119,7 @@ async function archiveMessage(msg: Message, archivedChannel: Channel, gameTag: s
 				},
 				pinned: msg.pinned ?? false,
 				cleanContent: msg.cleanContent,
+				rawContent: msg.content,
 				channel: {
 					connect: {
 						id: archivedChannel.id,
@@ -168,16 +173,14 @@ async function archiveMessage(msg: Message, archivedChannel: Channel, gameTag: s
 				let whileIndex = 0;
 
 				while (message) {
-					console.log('WHILE LOOP ITERATION');
 					whileIndex += 1;
 					const messages = await channel.messages.fetch({ limit: 100, before: message.id });
 
 					if (whileIndex === 1) messages.set(message.id, message);
 					for (let i = 0; i < messages.size; i++) {
-						console.log(i);
 						const { archived, count, error, alreadyExists } = await archiveMessage(messages.at(i), newThread.channel, gameTag);
 						totalCount += count;
-						console.log(whileIndex, i, totalCount, error, alreadyExists ? 'REPEATED' : 'CREATED');
+						// console.log(whileIndex, i, totalCount, error, alreadyExists ? 'REPEATED' : 'CREATED');
 					}
 					message = 0 < messages.size ? messages.at(messages.size - 1) : null;
 
@@ -192,7 +195,7 @@ async function archiveMessage(msg: Message, archivedChannel: Channel, gameTag: s
 		return { archived: storedMessage, count: count + 1 };
 	} catch (err) {
 		console.log(err);
-		return { error: true, count };
+		return { error: true, count, err };
 	}
 }
 

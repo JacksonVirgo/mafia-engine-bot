@@ -1,4 +1,4 @@
-import { ActionRowBuilder, AnySelectMenuInteraction, ButtonBuilder, ButtonInteraction, Collection, ModalBuilder, ModalSubmitInteraction, TextInputBuilder } from 'discord.js';
+import { ActionRowBuilder, AnySelectMenuInteraction, ButtonBuilder, ButtonInteraction, Collection, ModalBuilder, ModalSubmitInteraction, TextInputBuilder, Interaction as CoreInteraction, MessagePayload } from 'discord.js';
 type CustomID = string;
 type AnyOutcome = any | Promise<any>;
 
@@ -132,6 +132,8 @@ export class Modal extends Interaction {
 
 		if (cache) newModal.setCustomId(`${this.customID}_${cache}`);
 		else newModal.setCustomId(this.customID);
+
+		console.log('HERE');
 		return newModal;
 	}
 
@@ -150,4 +152,10 @@ export class Modal extends Interaction {
 		if (!i.isModalSubmit()) return;
 		if (this.func) this.func(i, cacheHandle);
 	}
+}
+
+export async function safeReply(i: CoreInteraction, data: string | MessagePayload) {
+	if (!i.isRepliable()) return;
+	if (i.replied) return await i.followUp(data);
+	else return await i.reply(data);
 }

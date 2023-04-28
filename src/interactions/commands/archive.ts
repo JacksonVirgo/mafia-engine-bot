@@ -1,45 +1,30 @@
-import { ActionRowBuilder, ChannelSelectMenuBuilder, ChannelType, InviteTargetType, SlashCommandBuilder, TextChannel } from 'discord.js';
+import { ChannelType, SlashCommandBuilder, TextChannel } from 'discord.js';
 import { arch } from 'os';
 import { newSlashCommand } from '../../structures/BotClient';
-import archive from '../selectmenu/archive';
+import { safeReply } from '../../structures/interactions';
+import { archiveChannel } from '../selectmenu/archive';
 
 const data = new SlashCommandBuilder().setName('archive').setDescription('Archive a channel');
-
-data.addStringOption((x) =>
-	x
-		.setName('queue')
-		.setDescription('What queue is this game running under?')
-		.addChoices(
-			{
-				name: 'Main',
-				value: 'ma',
-			},
-			{
-				name: 'Special',
-				value: 'sp',
-			},
-			{
-				name: 'Newcomer',
-				value: 'ne',
-			},
-			{
-				name: 'Community',
-				value: 'co',
-			}
-		)
-		.setRequired(true)
-).addIntegerOption((x) => x.setName('number').setDescription('What number game is it in the queue').setRequired(true));
+data.addChannelOption((x) => x.setName('channel').setDescription('Channel to archive').addChannelTypes(ChannelType.GuildText).setRequired(true));
 
 export default newSlashCommand({
 	data,
 	execute: async (i) => {
-		const queue = i.options.getString('queue', true);
-		const queueIndex = i.options.getInteger('number', true);
+		try {
+			await i.guild.channels.fetch();
+			await i.reply('Attempting to archive');
+			const message = await i.channel.send('PROGRESS');
 
-		const gameTag = queue + queueIndex;
-		const archiveID = archive.createCustomID(gameTag);
-		console.log(archiveID);
-		const row = new ActionRowBuilder<ChannelSelectMenuBuilder>().addComponents(new ChannelSelectMenuBuilder().addChannelTypes(ChannelType.GuildText).setCustomId(archiveID).setMinValues(1).setMaxValues(20));
-		await i.reply({ components: [row] });
+			const channel = i.options.getChannel('channel', true) as TextChannel;
+			const archivedChannel = await archiveChannel(channel);
+			if (archivedChannel) {
+				await message.edit(`<#${channel.id}> archived`);
+			} else {
+				await message.edit(`<#${channel.id}> failed to archive`);
+			}
+		} catch (err) {
+			console.log(err);
+			await safeReply(i, 'No');
+		}
 	},
 });
