@@ -1,4 +1,4 @@
-import { ActionRowBuilder, channelLink, ChannelSelectMenuBuilder, ChannelType, InviteTargetType, SlashCommandBuilder, TextChannel } from 'discord.js';
+import { ChannelType, SlashCommandBuilder, TextChannel } from 'discord.js';
 import { arch } from 'os';
 import { newSlashCommand } from '../../structures/BotClient';
 import { safeReply } from '../../structures/interactions';

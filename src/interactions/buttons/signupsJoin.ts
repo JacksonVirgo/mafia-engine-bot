@@ -2,11 +2,16 @@ import { sign } from 'crypto';
 import { prisma } from '../..';
 import { Button } from '../../structures/interactions';
 import { createSignupPost } from '../commands/signups';
+import { sendLog } from '../../util/logger';
 
 export default new Button('signups-join').onExecute(async (i, cache) => {
 	if (!cache) return await i.reply({ content: 'This button is invalid', ephemeral: true });
 	const signup = await prisma.signup.findUnique({ where: { id: cache } });
 	if (!signup || signup.isLocked) return await i.reply({ content: 'This signup is no longer active', ephemeral: true });
+
+	await sendLog({
+		content: `**${i.user.tag}** attempted to signup **${signup.name}** in <#${i.channel.id}>`,
+	});
 
 	if (signup.limit && signup.players.length >= signup.limit) {
 		return await i.reply({ content: 'This signup is full', ephemeral: true });

@@ -125,10 +125,11 @@ model Channel {
   game   Game?   @relation(fields: [gameId], references: [id])
   gameId String? @db.ObjectId
 
-  guildId   String
-  channelId String  @unique
-  name      String
-  isThread  Boolean @default(false)
+  guildId    String
+  channelId  String    @unique
+  name       String
+  isThread   Boolean   @default(false)
+  archivedAt DateTime? @default(now())
 
   messages Message[]
   thread   Thread[]
