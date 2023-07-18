@@ -5,5 +5,5 @@
 		"sourceMap": true,
 		"outDir": "./dist"
 	},
-	"exclude": ["./dist"]
+	"exclude": ["./dist", "./node_modules", "./client"]
 }
