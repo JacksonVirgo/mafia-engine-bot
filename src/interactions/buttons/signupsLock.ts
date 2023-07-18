@@ -22,7 +22,9 @@ export default new Button('signups-lock').onExecute(async (i, cache) => {
 		},
 	});
 
-	const { embed, row } = await createSignupPost(updatedSignup, i.guild, updatedSignup.isLocked);
+	const { embed, row } = await createSignupPost(updatedSignup, i.guild, {
+		isLocked: signup.isLocked,
+	});
 	await i.message.edit({ embeds: [embed], components: [row] });
 	await i.reply({ content: 'Successfully signed up', ephemeral: true });
 	await i.deleteReply();

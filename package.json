@@ -4,7 +4,9 @@
 	"main": "index.js",
 	"scripts": {
 		"dev": "nodemon ./src/index.ts",
-		"start": "pm2 start ./dist/index.js",
+		"start": "node ./dist/index.js",
+		"start:local": "pm2 start ./dist/index.js --name mafia-engine",
+		"restart": "pm2 delete mafia-engine && npm run build && npm run start",
 		"build": "tsc",
 		"postinstall": "npm run build",
 		"build:prisma": "npx prisma format && npx prisma generate && npx prisma db push"
@@ -21,7 +23,7 @@
 	"dependencies": {
 		"@prisma/client": "^4.9.0",
 		"@types/string-similarity": "^4.0.0",
-		"discord.js": "^14.7.1",
+		"discord.js": "^14.9.0",
 		"dotenv": "^16.0.3",
 		"fs": "^0.0.1-security",
 		"string-similarity": "^4.0.4"

@@ -5,6 +5,7 @@ import { newSlashCommand } from '../../structures/BotClient';
 import signupsBackup from '../buttons/signupsBackup';
 import signupsJoin from '../buttons/signupsJoin';
 import signupsRemove from '../buttons/signupsRemove';
+import { sign } from 'crypto';
 
 const data = new SlashCommandBuilder().setName('signups').setDescription('Create a signups LFG post');
 data.addStringOption((title) => title.setName('title').setDescription('Title for the signup').setRequired(false));
@@ -35,7 +36,12 @@ interface SignupPost {
 	row: ActionRowBuilder<ButtonBuilder>;
 	embed: EmbedBuilder;
 }
-export async function createSignupPost(signup: Signup, guild: Guild | null, isLocked?: boolean): Promise<SignupPost> {
+
+type FormatSignupOptions = {
+	isLocked?: boolean;
+	useTags?: boolean;
+};
+export async function createSignupPost(signup: Signup, guild: Guild | null, options: FormatSignupOptions = {}): Promise<SignupPost> {
 	const title = signup.name ?? 'Discord Mafia Signups';
 	const limit = signup.limit;
 
@@ -43,12 +49,18 @@ export async function createSignupPost(signup: Signup, guild: Guild | null, isLo
 	let playerCounter = `${players.length}${limit ? `/${limit}` : ''}`;
 	let backupCounter = `${backups.length}`;
 
+	if (guild) {
+		await guild.members.fetch();
+	}
+
 	const getList = (list: string[]) => {
 		let value = '';
 		for (let i = 0; i < list.length; i++) {
 			const storedUser = list[i];
-			let base = true;
-			if (base) value += `> <@${storedUser}>\n`;
+			const user = guild ? guild.members.cache.get(storedUser) : null;
+
+			if (!user || options.useTags) value += `> 1. <@${storedUser}>\n`;
+			else value += `> ${i + 1}. <@${storedUser}> ${user.displayName ?? user.nickname ?? user.user.username}\n`;
 		}
 		if (value === '') value = '> Nobody';
 		return value;
@@ -61,6 +73,14 @@ export async function createSignupPost(signup: Signup, guild: Guild | null, isLo
 	embed.setTitle(title);
 	embed.setDescription('Click on the appropriate buttons to join a group.');
 	embed.setColor(Colors.White);
+
+	// if (signup.id === '64a84b0160cb5ed45721c111') {
+	// 	embed.addFields({
+	// 		name: `Spectators (${playerCounter})`,
+	// 		value: playerValue.trim(),
+	// 		inline: true,
+	// 	});
+	// } else {
 	embed.addFields(
 		{
 			name: `Players (${playerCounter})`,
@@ -80,8 +100,12 @@ export async function createSignupPost(signup: Signup, guild: Guild | null, isLo
 	if (signup.limit && signup.players.length >= signup.limit) {
 		joinButton.setDisabled(true);
 	}
+
+	// if (signup.id === '64a84b0160cb5ed45721c111') joinButton.setLabel('Spectate');
+
 	row.addComponents(joinButton);
 
+	// if (signup.id !== '64a84b0160cb5ed45721c111')
 	row.addComponents(new ButtonBuilder().setCustomId(signupsBackup.createCustomID(signup.id)).setEmoji('❔').setLabel('Backup').setStyle(ButtonStyle.Secondary));
 	row.addComponents(new ButtonBuilder().setCustomId(signupsRemove.createCustomID(signup.id)).setEmoji('❌').setStyle(ButtonStyle.Secondary));
 	return { embed, row };

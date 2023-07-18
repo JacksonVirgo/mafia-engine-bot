@@ -11,14 +11,21 @@ export default newSlashCommand({
 	execute: async (i) => {
 		const aliveLine = i.options.getRole('aliveline', true);
 		const channel = i.options.getChannel('channel', true) as TextChannel;
-		const ago = i.options.getInteger('ago', true) * 1000;
 		const req = i.options.getInteger('requirement', true);
-		const checkFrom = new Date(new Date().getTime() - ago * 60 * 60 * 1000).getTime();
+
+		const hoursToCheck = i.options.getInteger('ago', true);
+		const millisecondToCheck = hoursToCheck * 60 * 60 * 1000;
+
+		const dateFrom = new Date(new Date().getTime() - millisecondToCheck).getTime();
+		const seconds = Math.floor(dateFrom / 1000);
 
 		if (!i.guild) return;
 		await i.deferReply({ ephemeral: true });
 
 		try {
+			await i.guild.roles.fetch();
+			await i.guild.members.fetch();
+
 			const prodChecks: Record<string, Message<boolean>[]> = {};
 			const role = i.guild.roles.cache.get(aliveLine.id);
 			if (!role) throw Error('Invalid role');
@@ -27,17 +34,28 @@ export default newSlashCommand({
 				prodChecks[user] = [];
 			});
 
+			await i.editReply({
+				content: `Checking prods for:\n${users.map((u) => `<@${u}>`).join('\n')}`,
+			});
+
 			let message = await channel.messages.fetch({ limit: 1 }).then((messagePage) => (messagePage.size === 1 ? messagePage.at(0) : null));
+			let messageCount = 1;
+
+			const checkMessage = (msg: Message) => {
+				const createdAt = Math.ceil(msg.createdAt.getTime() / 1000);
+				if (users.includes(msg.author.id) && createdAt > seconds) {
+					prodChecks[msg.author.id].push(msg);
+				}
+			};
+
+			checkMessage(message);
+
 			while (message) {
 				let hitProdThreshold = false;
 				await channel.messages.fetch({ limit: 100, before: message.id }).then((messagePage) => {
 					messagePage.forEach((msg) => {
-						if (msg.createdTimestamp < checkFrom) hitProdThreshold = true;
-						if (users.includes(msg.author.id)) {
-							if (msg.createdTimestamp >= checkFrom) {
-								prodChecks[msg.author.id].push(msg);
-							}
-						}
+						messageCount++;
+						checkMessage(msg);
 					});
 					message = 0 < messagePage.size ? messagePage.at(messagePage.size - 1) : null;
 					if (hitProdThreshold) message = null;
@@ -48,17 +66,21 @@ export default newSlashCommand({
 			embed.setTitle('Prod Check');
 			embed.setColor(Colors.White);
 
+			embed.setDescription(`Checked ${messageCount} messages in <#${channel.id}>.\nChecking since <t:${seconds}:R>, (${hoursToCheck} hours)`);
+
 			const prodded: string[] = [];
+			const cleared: string[] = [];
 			for (const userID in prodChecks) {
-				console.log(`checking ${userID}`);
 				const list = prodChecks[userID];
-				if (list.length < req ?? 20) prodded.push(`<@${userID}> has ${list.length}/${req ?? 20} messages.`);
+
+				if (list.length >= req) cleared.push(`<@${userID}> has ${list.length}/${req} messages.`);
+				else prodded.push(`<@${userID}> has ${list.length}/${req} messages.`);
 			}
 
+			if (cleared.length > 0) embed.addFields({ name: 'Cleared', value: cleared.join('\n') });
 			if (prodded.length > 0) embed.addFields({ name: 'Prodded', value: prodded.join('\n') });
-			else embed.setDescription('Nobody was prodded!');
 
-			await i.editReply({ embeds: [embed] });
+			await i.editReply({ content: '', embeds: [embed] });
 		} catch (err) {
 			console.log(err);
 			await i.editReply('An error has occurred');
