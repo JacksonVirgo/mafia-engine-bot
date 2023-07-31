@@ -6,12 +6,16 @@ import { Button, Event, Modal, SelectMenu } from './interactions';
 import OnClientReady from '../interactions/events/clientReady';
 import OnInteraction from '../interactions/events/onInteraction';
 import { ContextMenuCommandBuilder, ApplicationCommandType } from 'discord.js';
+import { config } from '..';
 
-export const DEFAULT_INTENTS = { intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMembers, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent, GatewayIntentBits.GuildIntegrations] };
+export const DEFAULT_INTENTS = {
+	intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMembers, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent, GatewayIntentBits.GuildIntegrations],
+};
 
 export const slashCommands: Collection<string, SlashCommand> = new Collection();
 export interface SlashCommand {
 	data: SlashCommandBuilder;
+	mainServer?: boolean;
 	execute: (i: ChatInputCommandInteraction) => any | Promise<any>;
 }
 
@@ -76,12 +80,23 @@ export class BotClient extends Client {
 
 	public async registerCommands() {
 		try {
-			const list: any[] = [];
+			const allServerList: any[] = [];
+			const mainServerList: any[] = [];
+
 			slashCommands.forEach((val) => {
-				list.push(val.data.toJSON());
+				if (val.mainServer) mainServerList.push(val.data.toJSON());
+				else allServerList.push(val.data.toJSON());
 			});
 
-			const raw = await this.rest.put(Routes.applicationCommands(this.clientID), { body: list });
+			await this.guilds.fetch();
+			const guild = this.guilds.cache.get(config.MAIN_SERVER_ID);
+			if (mainServerList.length > 0) {
+				const raw = await this.rest.put(Routes.applicationGuildCommands(this.clientID, config.MAIN_SERVER_ID), { body: mainServerList });
+				const data = raw as any;
+				console.log(`[GUILD] Successfully reloaded ${data.length} application (/) commands.\n`);
+			}
+
+			const raw = await this.rest.put(Routes.applicationCommands(this.clientID), { body: allServerList });
 			const data = raw as any;
 			console.log(`Successfully reloaded ${data.length} application (/) commands.`);
 		} catch (err) {
