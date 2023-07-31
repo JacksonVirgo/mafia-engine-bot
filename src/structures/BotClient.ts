@@ -48,7 +48,7 @@ export class BotClient extends Client {
 		this.loadInteractions<Button>('buttons');
 		this.loadInteractions<SelectMenu>('selectmenu');
 		this.loadInteractions<Modal>('modals');
-		this.loadInteractions<ContextMenuCommandBuilder>('context');
+		// this.loadInteractions<ContextMenuCommandBuilder>('context');
 
 		this.assignEvents();
 		this.registerCommands();

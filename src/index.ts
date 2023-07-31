@@ -2,6 +2,9 @@ import { BotClient } from './structures/BotClient';
 import { cacheTick, clearExpiredCache } from './structures/Cache';
 import { PrismaClient } from '@prisma/client';
 import { z } from 'zod';
+import {config as dotenv} from 'dotenv';
+
+dotenv();
 
 const envSchema = z.object({
 	DISCORD_BOT_TOKEN: z.string(),
